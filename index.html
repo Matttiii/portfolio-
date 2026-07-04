@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matvii Halchevskyi — Portfolio</title>
+<meta name="description" content="Matvii Halchevskyi — ravintola-ala, logistiikka, autonhuolto ja pelikehitys. Vantaa, Suomi.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#07080B;
+    --bg2:#0D0F14;
+    --panel:#12151B;
+    --panel2:#171B22;
+    --line:rgba(255,255,255,0.09);
+    --line-strong:rgba(255,255,255,0.16);
+    --text:#EDEBE5;
+    --muted:#8B93A3;
+    --muted-dim:#5B6270;
+    --signal:#FF7A3D;
+    --hud:#4AFFA0;
+    --blood:#D42B45;
+    --mist:#7FA3BE;
+    --gold:#E8C468;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
+    overflow-x:hidden; width:100%;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;}
+  .display{font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase; letter-spacing:0.01em;}
+  a{color:inherit; text-decoration:none;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  img{display:block; max-width:100%;}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--signal); outline-offset:3px;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important; scroll-behavior:auto !important;} }
+  ::selection{background:var(--signal); color:#0a0a0a;}
+
+  .reveal{opacity:0; transform:translateY(36px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1);}
+  .reveal.visible{opacity:1; transform:translateY(0);}
+  .reveal-scale{opacity:0; transform:scale(0.94); transition:opacity .9s ease, transform .9s cubic-bezier(.16,1,.3,1);}
+  .reveal-scale.visible{opacity:1; transform:scale(1);}
+
+  /* ---------- HUD BAR (signature element) ---------- */
+  .hud-bar{
+    position:fixed; top:0; left:0; right:0; z-index:150;
+    height:26px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; background:rgba(7,8,11,0.92); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace;
+    font-size:0.68rem; color:var(--hud); letter-spacing:0.04em; pointer-events:none;
+    opacity:0.92;
+  }
+  .hud-bar span{white-space:nowrap;}
+  .hud-bar .hud-mid{display:flex; gap:22px;}
+  .hud-bar .hud-alt{color:var(--gold);}
+  .hud-bar .hud-dim{color:var(--muted-dim);}
+  @media (max-width:700px){ .hud-bar .hud-hide-mobile{display:none;} }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed; top:26px; left:0; right:0; z-index:140;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 6vw; background:rgba(7,8,11,0.72); backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-name{font-weight:700; font-size:1rem; letter-spacing:0.02em; cursor:pointer; user-select:none;}
+  .nav-name span{color:var(--signal);}
+  .nav-links{display:flex; gap:30px; font-size:0.88rem; font-weight:500;}
+  .nav-links a{position:relative; padding-bottom:4px; color:var(--muted);}
+  .nav-links a:hover{color:var(--text);}
+  .nav-links a::after{content:''; position:absolute; left:0; bottom:0; height:1px; width:0; background:var(--signal); transition:width .25s ease;}
+  .nav-links a:hover::after{width:100%;}
+  .burger{display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:6px;}
+  .burger span{width:22px; height:2px; background:var(--text);}
+  .mobile-menu{
+    display:none; position:fixed; top:74px; left:0; right:0; z-index:139;
+    background:var(--panel); border-bottom:1px solid var(--line);
+    flex-direction:column; padding:6px 6vw 20px;
+  }
+  .mobile-menu a{padding:14px 0; border-bottom:1px solid var(--line); font-size:1rem; color:var(--text);}
+  .mobile-menu.open{display:flex;}
+  @media (max-width:760px){ .nav-links{display:none;} .burger{display:flex;} }
+
+  /* ---------- HERO (panoramic) ---------- */
+  header.hero{
+    min-height:100vh; position:relative; display:flex; align-items:flex-end;
+    overflow:hidden; padding:0 0 90px;
+  }
+  .hero-bg{
+    position:absolute; inset:0; z-index:0;
+    background-image:
+      linear-gradient(180deg, rgba(7,8,11,0.35) 0%, rgba(7,8,11,0.55) 55%, rgba(7,8,11,0.97) 100%),
+      linear-gradient(90deg, rgba(7,8,11,0.9) 0%, rgba(7,8,11,0.15) 45%, rgba(7,8,11,0.55) 100%),
+      url('images/hero_face.jpg');
+    background-size:cover; background-position:center 30%;
+    will-change:transform;
+  }
+  .hero-scan{position:absolute; inset:0; z-index:1; pointer-events:none; opacity:0.05;
+    background:repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px);}
+  .hero-hud-ring{
+    position:absolute; z-index:2; pointer-events:none;
+    border:1px solid rgba(74,255,160,0.35); border-radius:50%;
+  }
+  .hero-hud-ring.r1{width:520px; height:520px; top:8%; right:-140px;}
+  .hero-hud-ring.r2{width:340px; height:340px; top:14%; right:-60px; border-color:rgba(255,122,61,0.3);}
+  .hero-crosshair{position:absolute; z-index:2; font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--hud); opacity:0.7; pointer-events:none;}
+  .hero-inner{position:relative; z-index:3; width:100%; padding:0 6vw; max-width:1400px; margin:0 auto;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:0.78rem; letter-spacing:0.14em; color:var(--hud); text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:10px;}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--hud); box-shadow:0 0 8px 2px rgba(74,255,160,0.5); animation:blink 2.2s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  h1.title{font-size:clamp(2.8rem, 7.5vw, 6.4rem); line-height:0.96; margin-bottom:26px; max-width:1100px;}
+  h1.title .accent{color:var(--signal);}
+  .hero p.lead{font-size:1.12rem; color:var(--muted); max-width:560px; line-height:1.7; margin-bottom:34px;}
+  .tag-row{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:38px;}
+  .tag{font-family:'JetBrains Mono',monospace; font-size:0.78rem; padding:8px 15px; border-radius:2px; border:1px solid var(--line-strong); background:rgba(255,255,255,0.02); color:var(--muted);}
+  .cta-row{display:flex; flex-wrap:wrap; gap:16px;}
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:15px 28px; font-weight:600; font-size:0.94rem; transition:transform .2s ease, box-shadow .2s ease, background .2s ease; cursor:pointer; border:none; border-radius:2px;}
+  .btn-primary{background:var(--signal); color:#0a0a0a;}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 16px 32px -10px rgba(255,122,61,0.5);}
+  .btn-outline{border:1px solid var(--line-strong); color:var(--text); background:transparent;}
+  .btn-outline:hover{transform:translateY(-2px); border-color:var(--hud); color:var(--hud);}
+  .scroll-cue{position:absolute; bottom:26px; left:6vw; z-index:3; display:flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--muted-dim); letter-spacing:0.08em;}
+  .scroll-cue .bar{width:1px; height:34px; background:linear-gradient(180deg, var(--hud), transparent); animation:scrolldown 1.8s infinite;}
+  @keyframes scrolldown{0%{transform:scaleY(0); transform-origin:top;} 50%{transform:scaleY(1); transform-origin:top;} 50.01%{transform-origin:bottom;} 100%{transform:scaleY(0); transform-origin:bottom;}}
+  @media (max-width:760px){ .hero-hud-ring, .hero-crosshair{display:none;} header.hero{align-items:flex-end; padding-bottom:70px;} }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:130px 6vw; position:relative;}
+  .section-inner{max-width:1400px; margin:0 auto;}
+  .section-head{margin-bottom:64px; max-width:680px;}
+  .section-head .eyebrow{color:var(--signal);}
+  .section-head h2{font-size:clamp(2rem,3.6vw,3.2rem); font-weight:700; letter-spacing:-0.01em; line-height:1.05;}
+  .section-head p{color:var(--muted); margin-top:16px; font-size:1.05rem; line-height:1.65;}
+
+  /* ---------- ROUTE (horizontal panoramic timeline) ---------- */
+  .route-scroll{
+    display:flex; gap:0; overflow-x:auto; padding-bottom:30px; margin:0 -6vw; padding-left:6vw; padding-right:6vw;
+    scrollbar-width:thin; scrollbar-color:var(--line-strong) transparent;
+  }
+  .route-scroll::-webkit-scrollbar{height:6px;}
+  .route-scroll::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:4px;}
+  .route-line-h{position:relative; height:2px; background:var(--line); margin:0 -6vw 46px; }
+  .route-line-h-fill{position:absolute; top:0; left:0; height:100%; width:0%; background:linear-gradient(90deg, var(--signal), var(--hud)); transition:width .1s linear;}
+  .stop{
+    flex:0 0 300px; padding:0 28px 0 0; margin-right:28px; border-left:1px solid var(--line); padding-left:26px;
+    position:relative;
+  }
+  .stop:last-child{margin-right:0;}
+  .stop-marker{font-size:1.6rem; margin-bottom:18px; display:block;}
+  .stop-role{font-size:1.2rem; font-weight:700; display:block; margin-bottom:4px;}
+  .stop-company{color:var(--signal); font-weight:600; font-size:0.94rem; display:block; margin-bottom:8px;}
+  .stop-dates{font-family:'JetBrains Mono',monospace; font-size:0.76rem; color:var(--muted-dim); display:block; margin-bottom:14px;}
+  .stop-desc{color:var(--muted); font-size:0.94rem; line-height:1.6;}
+  @media (max-width:700px){
+    .route-scroll{flex-direction:column; overflow-x:visible; margin:0; padding:0;}
+    .stop{flex:none; margin-right:0; margin-bottom:38px; padding-right:0;}
+  }
+
+  /* ---------- SKILLS ---------- */
+  .skill-groups{display:grid; grid-template-columns:repeat(2,1fr); gap:44px;}
+  @media (max-width:700px){.skill-groups{grid-template-columns:1fr;}}
+  .skill-group h3{font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted-dim); margin-bottom:16px; font-family:'JetBrains Mono',monospace; font-weight:500;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:9px;}
+  .pill{padding:9px 16px; border-radius:2px; font-size:0.88rem; font-weight:500; background:var(--panel); border:1px solid var(--line);}
+  .pill.alt{background:transparent; border:1px solid var(--signal); color:var(--signal);}
+  .pill.alt2{background:transparent; border:1px solid var(--hud); color:var(--hud);}
+
+  .lang-list{display:grid; gap:24px; max-width:520px;}
+  .lang-row{display:grid; grid-template-columns:140px 1fr 90px; align-items:center; gap:14px;}
+  .lang-name{font-weight:600; font-size:0.95rem;}
+  .lang-track{height:6px; background:var(--panel2); overflow:hidden;}
+  .lang-fill{height:100%; width:0%; transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+  .lang-pct{font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); text-align:right;}
+
+  .achievement{display:flex; align-items:center; gap:26px; background:var(--panel); border:1px solid var(--line); padding:30px 32px; max-width:640px; border-left:3px solid var(--signal);}
+  .achievement .medal{font-size:2.4rem;}
+  .achievement h3{font-size:1.1rem; margin-bottom:4px;}
+  .achievement p{color:var(--muted); font-size:0.9rem;}
+
+  /* ---------- PROJECTS: full-bleed panoramic chapters ---------- */
+  .proj-chapter{
+    position:relative; min-height:100vh; display:flex; flex-direction:column; justify-content:flex-end;
+    padding:0 0 70px; overflow:hidden; border-bottom:1px solid var(--line);
+  }
+  .proj-bg{
+    position:absolute; inset:0; background-size:cover; background-position:center; z-index:0;
+    will-change:transform; transform:scale(1.08);
+  }
+  .proj-overlay{position:absolute; inset:0; z-index:1;}
+  .proj-content{position:relative; z-index:2; padding:0 6vw; max-width:1400px; margin:0 auto; width:100%;}
+  .proj-num{font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); margin-bottom:16px; display:block;}
+  .proj-content h3{font-size:clamp(2.2rem,5vw,4.2rem); line-height:0.98; margin-bottom:18px;}
+  .proj-content p.desc{color:#D8DAE0; line-height:1.7; max-width:640px; margin-bottom:26px; font-size:1.02rem; text-shadow:0 2px 12px rgba(0,0,0,0.5);}
+  .proj-meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:34px;}
+  .proj-meta{font-family:'JetBrains Mono',monospace; font-size:0.74rem; padding:7px 13px; border:1px solid rgba(255,255,255,0.25); color:#E5E7EB; backdrop-filter:blur(4px); background:rgba(0,0,0,0.25);}
+
+  .filmstrip{
+    display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; margin:0 -6vw; padding-left:6vw; padding-right:6vw;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.25) transparent;
+  }
+  .filmstrip::-webkit-scrollbar{height:6px;}
+  .filmstrip::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.25); border-radius:4px;}
+  .filmstrip img{
+    flex:0 0 auto; height:210px; width:auto; object-fit:cover; border:1px solid rgba(255,255,255,0.15);
+    cursor:pointer; transition:transform .3s ease, filter .3s ease; filter:brightness(0.9);
+  }
+  .filmstrip img:hover{transform:translateY(-6px) scale(1.02); filter:brightness(1.05);}
+  @media (max-width:640px){ .filmstrip img{height:150px;} }
+
+  /* per-project theme accents */
+  .theme-crimson .proj-bg{filter:contrast(1.15) saturate(1.2) brightness(0.85);}
+  .theme-crimson .proj-num{color:#FF8B8B;}
+  .theme-crimson .proj-overlay{background:linear-gradient(0deg, rgba(6,4,5,0.98) 0%, rgba(6,4,5,0.55) 42%, rgba(20,4,6,0.35) 100%);}
+  .theme-crimson h3{color:#FFB199;}
+  .theme-crimson .proj-meta{border-color:rgba(212,43,69,0.45);}
+
+  .theme-verdant .proj-bg{filter:saturate(1.25) brightness(0.92) contrast(1.05);}
+  .theme-verdant .proj-num{color:#9BE8B8;}
+  .theme-verdant .proj-overlay{background:linear-gradient(0deg, rgba(5,10,7,0.97) 0%, rgba(5,10,7,0.5) 42%, rgba(10,20,14,0.3) 100%);}
+  .theme-verdant h3{color:#A9EFC1;}
+
+  .theme-fog .proj-bg{filter:saturate(0.55) brightness(0.8) blur(0.5px);}
+  .theme-fog .proj-num{color:#C4D6E4;}
+  .theme-fog .proj-overlay{background:linear-gradient(0deg, rgba(9,11,13,0.98) 0%, rgba(9,11,13,0.55) 42%, rgba(14,17,20,0.35) 100%);}
+  .theme-fog h3{color:#D3E1EB;}
+
+  .theme-void .proj-bg{filter:contrast(1.2) saturate(1.3) hue-rotate(-6deg) brightness(0.8);}
+  .theme-void .proj-num{color:#FF9AC0;}
+  .theme-void .proj-overlay{background:linear-gradient(0deg, rgba(6,3,5,0.98) 0%, rgba(6,3,5,0.55) 40%, rgba(20,4,10,0.35) 100%);}
+  .theme-void h3{color:#FFA8CB;}
+
+  .theme-hud .proj-bg{filter:saturate(0.85) brightness(0.82) hue-rotate(4deg);}
+  .theme-hud .proj-num{color:#8CFFCF; font-family:'JetBrains Mono',monospace;}
+  .theme-hud .proj-overlay{background:linear-gradient(0deg, rgba(4,10,8,0.98) 0%, rgba(4,10,8,0.55) 42%, rgba(6,15,12,0.3) 100%);}
+  .theme-hud h3{color:#9CFFD6; font-family:'JetBrains Mono',monospace; letter-spacing:-0.01em;}
+
+  .proj-hud-readout{
+    position:absolute; top:26px; right:6vw; z-index:2; font-family:'JetBrains Mono',monospace; font-size:0.7rem;
+    color:var(--hud); text-align:right; opacity:0.85; line-height:1.6; display:none;
+  }
+  .theme-hud .proj-hud-readout{display:block;}
+
+  /* --- 01 Käytävät: flickering flashlight glow --- */
+  .fx-flicker{position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(circle at 60% 45%, rgba(255,180,140,0.16), transparent 42%);
+    animation:flickerLight 4.5s infinite;}
+  @keyframes flickerLight{
+    0%,19%,21%,23%,80%,100%{opacity:1;} 20%{opacity:0.35;} 22%{opacity:0.85;} 45%{opacity:0.75;} 46%{opacity:1;}
+  }
+  .fx-dust{position:absolute; z-index:1; pointer-events:none; border-radius:50%; background:rgba(255,200,170,0.5);
+    animation:dustFloat linear infinite;}
+  @keyframes dustFloat{ 0%{transform:translateY(0) translateX(0); opacity:0;} 10%{opacity:0.6;} 90%{opacity:0.3;} 100%{transform:translateY(-140px) translateX(24px); opacity:0;} }
+
+  /* --- 02 Maankamara: drifting fireflies --- */
+  .fx-firefly{position:absolute; z-index:1; pointer-events:none; width:5px; height:5px; border-radius:50%;
+    background:#D9F58C; box-shadow:0 0 10px 3px rgba(217,245,140,0.7); animation:fireflyDrift ease-in-out infinite;}
+  @keyframes fireflyDrift{
+    0%{transform:translate(0,0); opacity:0;} 15%{opacity:0.9;}
+    50%{transform:translate(30px,-46px); opacity:0.6;}
+    85%{opacity:0.9;} 100%{transform:translate(-14px,-90px); opacity:0;}
+  }
+
+  /* --- 03 Sumu: drifting fog layers --- */
+  .fx-fog-layer{position:absolute; z-index:1; pointer-events:none; left:-20%; width:140%; height:60%;
+    background:linear-gradient(90deg, transparent, rgba(200,210,220,0.10), transparent);
+    animation:fogDrift linear infinite;}
+  .fx-fog-layer.f1{top:10%; animation-duration:26s;}
+  .fx-fog-layer.f2{top:45%; animation-duration:38s; animation-direction:reverse; opacity:0.7;}
+  .fx-fog-layer.f3{top:70%; animation-duration:32s;}
+  @keyframes fogDrift{ 0%{transform:translateX(-8%);} 100%{transform:translateX(8%);} }
+
+  /* --- 04 Juna: falling blood drips + red pulse --- */
+  .fx-drip{position:absolute; top:-20px; z-index:1; pointer-events:none; width:3px; border-radius:2px;
+    background:linear-gradient(180deg, transparent, var(--blood)); animation:dripFall linear infinite;}
+  @keyframes dripFall{ 0%{transform:translateY(0); opacity:0;} 10%{opacity:0.8;} 90%{opacity:0.5;} 100%{transform:translateY(340px); opacity:0;} }
+  .fx-pulse{position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(circle at 50% 60%, rgba(212,43,69,0.14), transparent 55%);
+    animation:redPulse 3.6s ease-in-out infinite;}
+  @keyframes redPulse{ 0%,100%{opacity:0.5;} 50%{opacity:1;} }
+
+  /* --- 05 DRONEQ: flying drone + HUD ticks --- */
+  .fx-drone{position:absolute; z-index:2; pointer-events:none; width:46px; height:auto; opacity:0.92;
+    filter:drop-shadow(0 0 8px rgba(74,255,160,0.5)); animation:droneFly 13s ease-in-out infinite;}
+  @keyframes droneFly{
+    0%{ top:70%; left:-6%; transform:rotate(-4deg) scale(0.85); }
+    28%{ top:22%; left:32%; transform:rotate(6deg) scale(1.05); }
+    52%{ top:48%; left:60%; transform:rotate(-8deg) scale(0.95); }
+    76%{ top:16%; left:82%; transform:rotate(4deg) scale(1.1); }
+    100%{ top:60%; left:108%; transform:rotate(-4deg) scale(0.85); }
+  }
+  .fx-tick-row{position:absolute; z-index:1; pointer-events:none; left:6vw; right:6vw; height:1px;
+    background:repeating-linear-gradient(90deg, rgba(74,255,160,0.35) 0 8px, transparent 8px 26px);}
+  .fx-tick-row.t1{top:18%;} .fx-tick-row.t2{top:82%;}
+
+  /* ---------- KEITTIÖ (panoramic filmstrip) ---------- */
+  .kitchen-strip{display:flex; gap:16px; overflow-x:auto; padding-bottom:14px; margin:0 -6vw; padding-left:6vw; padding-right:6vw;
+    scrollbar-width:thin; scrollbar-color:var(--line-strong) transparent;}
+  .kitchen-strip::-webkit-scrollbar{height:6px;}
+  .kitchen-strip::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:4px;}
+  .kitchen-strip a{flex:0 0 auto;}
+  .kitchen-strip img{
+    height:320px; width:auto; object-fit:cover; border:1px solid var(--line);
+    transition:transform .4s cubic-bezier(.16,1,.3,1), filter .4s ease; filter:saturate(0.92) brightness(0.95);
+  }
+  .kitchen-strip img:hover{transform:translateY(-8px); filter:saturate(1.08) brightness(1.05);}
+  @media (max-width:700px){ .kitchen-strip img{height:220px;} }
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--panel); border-top:1px solid var(--line); padding:90px 6vw 40px; position:relative; overflow:hidden;}
+  .contact-grid{display:grid; grid-template-columns:1.2fr 1fr; gap:60px; max-width:1400px; margin:0 auto; position:relative; z-index:2;}
+  @media (max-width:760px){.contact-grid{grid-template-columns:1fr;}}
+  footer h2{font-size:clamp(1.9rem,4vw,3rem); margin-bottom:18px;}
+  footer p.lead{color:var(--muted); max-width:440px; line-height:1.65; margin-bottom:30px; font-size:1.05rem;}
+  .contact-list{display:grid; gap:2px;}
+  .contact-list a, .contact-list span{display:flex; align-items:center; gap:14px; font-size:1rem; padding:16px 0; border-bottom:1px solid var(--line);}
+  .contact-list a:hover{color:var(--signal);}
+  .contact-list a.disabled{color:var(--muted-dim); cursor:pointer;}
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel2); border:1px solid var(--line-strong); color:var(--text);
+    padding:12px 20px; font-size:0.88rem; opacity:0; transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none; z-index:200; font-family:'JetBrains Mono',monospace;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .foot-note{margin-top:70px; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-family:'JetBrains Mono',monospace; font-size:0.76rem; color:var(--muted-dim); max-width:1400px; margin-left:auto; margin-right:auto; position:relative; z-index:2;}
+
+  /* lightbox */
+  .lightbox{position:fixed; inset:0; z-index:300; background:rgba(4,5,7,0.94); display:none; align-items:center; justify-content:center; padding:5vw; backdrop-filter:blur(6px);}
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:100%; max-height:88vh; border:1px solid var(--line-strong); object-fit:contain;}
+  .lightbox-close{position:absolute; top:24px; right:6vw; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:0.85rem; cursor:pointer; border:1px solid var(--line-strong); padding:8px 14px; background:rgba(0,0,0,0.4);}
+</style>
+</head>
+<body>
+
+<div class="hud-bar mono">
+  <span class="hud-alt" id="hudAlt">ALT&nbsp;0.0M</span>
+  <div class="hud-mid">
+    <span class="hud-hide-mobile" id="hudSpd">SPD&nbsp;0KM/H</span>
+    <span class="hud-hide-mobile hud-dim" id="hudHdg">HDG&nbsp;182°</span>
+    <span id="hudSat" class="hud-dim">SAT&nbsp;12</span>
+  </div>
+  <span id="hudSection">01 · HERO</span>
+</div>
+
+<nav>
+  <div class="nav-name">MATVII <span>H.</span></div>
+  <div class="nav-links">
+    <a href="#reitti">Reitti</a>
+    <a href="#osaaminen">Osaaminen</a>
+    <a href="#projektit">Projektit</a>
+    <a href="#keittio">Keittiö</a>
+    <a href="#yhteys">Yhteys</a>
+  </div>
+  <button class="burger" id="burgerBtn" aria-label="Valikko">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#reitti">Reitti</a>
+  <a href="#osaaminen">Osaaminen</a>
+  <a href="#projektit">Projektit</a>
+  <a href="#keittio">Keittiö</a>
+  <a href="#yhteys">Yhteys</a>
+</div>
+
+<header class="hero" id="heroSection">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-scan"></div>
+  <div class="hero-hud-ring r1"></div>
+  <div class="hero-hud-ring r2"></div>
+  <div class="hero-crosshair" style="top:18%; left:8%;">+</div>
+  <div class="hero-crosshair" style="top:62%; right:14%;">+</div>
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="dot"></span> VANTAA, SUOMI — AVOIN TYÖMAHDOLLISUUKSILLE</div>
+    <h1 class="title display">Neljä alaa.<br>Yksi <span class="accent">taito</span>: oppia nopeasti.</h1>
+    <p class="lead">Keittiöistä banketteihin, muuttokuormista autokorjaamoon — ja illalla omien pelien ja FPV-dronen ääreen. Monipuolinen ja luotettava tekijä, joka sopeutuu mihin tahansa hommaan.</p>
+    <div class="tag-row">
+      <span class="tag">🍳 RAVINTOLA-ALA</span>
+      <span class="tag">🚚 LOGISTIIKKA</span>
+      <span class="tag">🔧 AUTONHUOLTO</span>
+      <span class="tag">💻 IT-PROJEKTIT</span>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="mailto:ontheleanatmm@icloud.com">Ota yhteyttä</a>
+      <a class="btn btn-outline" href="#projektit">Katso projektit ↓</a>
+    </div>
+  </div>
+  <div class="scroll-cue"><div class="bar"></div> SCROLL</div>
+</header>
+
+<section id="reitti">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div class="eyebrow mono">01 — REITTI TÄHÄN MENNESSÄ</div>
+      <h2>Joka pysäkki on opettanut jotain.</h2>
+      <p>Kokemusta useilta eri aloilta — vieritä sivusuunnassa nähdäksesi koko matkan.</p>
+    </div>
+
+    <div class="route-line-h reveal"><div class="route-line-h-fill" id="routeFill"></div></div>
+
+    <div class="route-scroll">
+      <div class="stop reveal">
+        <span class="stop-marker">🍽️</span>
+        <span class="stop-role">Banketkien järjestäjä</span>
+        <span class="stop-company">Ravintola Ararat, Kiova</span>
+        <span class="stop-dates mono">2020–2021</span>
+        <p class="stop-desc">Juhlatilaisuuksien ja banketkien suunnittelu ja koordinointi.</p>
+      </div>
+      <div class="stop reveal">
+        <span class="stop-marker">🔧</span>
+        <span class="stop-role">Autonasentaja</span>
+        <span class="stop-company">Autokorjaamo, Pori</span>
+        <span class="stop-dates mono">2021–2022 · n. 3 kk</span>
+        <p class="stop-desc">Ajoneuvojen perushuolto ja pienkorjaukset.</p>
+      </div>
+      <div class="stop reveal">
+        <span class="stop-marker">🚚</span>
+        <span class="stop-role">Kuljettajan apulainen</span>
+        <span class="stop-company">Muuttokurki</span>
+        <span class="stop-dates mono">Ajoittainen työsuhde</span>
+        <p class="stop-desc">Muutto- ja kuljetuspalveluita asiakkaille: pakkaus, kuljetus, purku.</p>
+      </div>
+      <div class="stop reveal">
+        <span class="stop-marker">☕</span>
+        <span class="stop-role">Kokki</span>
+        <span class="stop-company">Moomi Café</span>
+        <span class="stop-dates mono">n. 3 kk</span>
+        <p class="stop-desc">Ruoka-annosten valmistus ja keittiön päivittäinen toiminta.</p>
+      </div>
+      <div class="stop reveal">
+        <span class="stop-marker">🥘</span>
+        <span class="stop-role">Avustava kokki</span>
+        <span class="stop-company">Hoivakoti Helena</span>
+        <span class="stop-dates mono">Talvi–syksy 2025</span>
+        <p class="stop-desc">Ruoanvalmistuksen avustaminen, hygienia- ja järjestyssääntöjen noudattaminen.</p>
+      </div>
+      <div class="stop reveal">
+        <span class="stop-marker">🎓</span>
+        <span class="stop-role">Keittiöharjoittelut</span>
+        <span class="stop-company">Eri työpaikat</span>
+        <span class="stop-dates mono">3 jaksoa · 2025–2026</span>
+        <p class="stop-desc">Useita harjoittelujaksoja keittiötehtävissä eri toimipaikoissa, n. 4 kk / jakso.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="osaaminen">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div class="eyebrow mono">02 — OSAAMINEN</div>
+      <h2>Repertuaari</h2>
+      <p>Ei yhtä erikoisalaa — vaan laaja työkalupakki, joka kasvaa koko ajan.</p>
+    </div>
+    <div class="skill-groups reveal">
+      <div class="skill-group"><h3>Ravintola-ala &amp; palvelu</h3>
+        <div class="pill-row"><span class="pill">Kokin taidot</span><span class="pill">Asiakaspalvelu</span><span class="pill">Tarjoilu</span><span class="pill">Tapahtumien järjestäminen</span></div></div>
+      <div class="skill-group"><h3>Logistiikka &amp; tekniikka</h3>
+        <div class="pill-row"><span class="pill">Kuljetuspalvelut</span><span class="pill">Ajoneuvojen huolto</span><span class="pill">Siivous- ja ylläpitotyöt</span></div></div>
+      <div class="skill-group"><h3>IT &amp; pelikehitys</h3>
+        <div class="pill-row"><span class="pill alt">Godot Engine</span><span class="pill alt">Python</span><span class="pill alt">HTML &amp; CSS</span><span class="pill alt">FPV-lennokit</span></div></div>
+      <div class="skill-group"><h3>Yleiset vahvuudet</h3>
+        <div class="pill-row"><span class="pill alt2">Nopea oppimiskyky</span><span class="pill alt2">Joustavuus</span><span class="pill alt2">Luotettavuus</span></div></div>
+    </div>
+
+    <div class="reveal" style="margin-top:64px; display:grid; grid-template-columns:1fr 1fr; gap:56px;">
+      <div>
+        <h3 class="mono" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-dim);margin-bottom:20px;font-weight:500;">Kielet</h3>
+        <div class="lang-list">
+          <div class="lang-row"><span class="lang-name">🇫🇮 Suomi</span><div class="lang-track"><div class="lang-fill" data-pct="70" style="background:var(--signal);"></div></div><span class="lang-pct">B2</span></div>
+          <div class="lang-row"><span class="lang-name">🇬🇧 Englanti</span><div class="lang-track"><div class="lang-fill" data-pct="85" style="background:var(--hud);"></div></div><span class="lang-pct">C1</span></div>
+          <div class="lang-row"><span class="lang-name">🇷🇺 Venäjä</span><div class="lang-track"><div class="lang-fill" data-pct="100" style="background:var(--signal);"></div></div><span class="lang-pct">Äidinkieli</span></div>
+          <div class="lang-row"><span class="lang-name">🇺🇦 Ukraina</span><div class="lang-track"><div class="lang-fill" data-pct="100" style="background:var(--hud);"></div></div><span class="lang-pct">Äidinkieli</span></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="mono" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-dim);margin-bottom:20px;font-weight:500;">Saavutus</h3>
+        <div class="achievement"><div class="medal">🥊</div><div><h3>KMS-arvo — thainyrkkeily</h3><p>Kandidaatti Mestariurheilija, Suomi</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projektit" style="padding:130px 0 0;">
+  <div class="section-inner" style="padding:0 6vw;">
+    <div class="section-head reveal">
+      <div class="eyebrow mono">03 — PROJEKTIT</div>
+      <h2>Viisi maailmaa, yksi tekijä.</h2>
+      <p>Vapaa-ajan peli- ja tekniikkaprojekteja Godot Enginellä — kukin omalla tunnelmallaan. Vieritä jokaisen luvun kuvasarjaa sivusuunnassa.</p>
+    </div>
+  </div>
+
+  <div class="proj-chapter theme-crimson reveal-scale" style="background-color:#0a0505;">
+    <div class="proj-bg" style="background-image:url('images/proj1_3.jpg');"></div>
+    <div class="proj-overlay"></div>
+    <div class="fx-flicker"></div>
+    <div class="fx-dust" style="left:22%; bottom:18%; width:3px; height:3px; animation-duration:6s; animation-delay:0s;"></div>
+    <div class="fx-dust" style="left:38%; bottom:10%; width:2px; height:2px; animation-duration:8s; animation-delay:1.4s;"></div>
+    <div class="fx-dust" style="left:55%; bottom:24%; width:4px; height:4px; animation-duration:7s; animation-delay:2.6s;"></div>
+    <div class="fx-dust" style="left:68%; bottom:14%; width:2px; height:2px; animation-duration:9s; animation-delay:0.8s;"></div>
+    <div class="fx-dust" style="left:80%; bottom:20%; width:3px; height:3px; animation-duration:6.5s; animation-delay:3.2s;"></div>
+    <div class="proj-content">
+      <span class="proj-num mono">01 / 05 — ⛓ PSX-KAUHU</span>
+      <h3 class="display">Käytävät</h3>
+      <p class="desc">Retro-PS1-tyylinen kauhupeli ahtaissa käytävissä. Pikselöity valaistus, verta tahriintuneet seinät ja pelkoa herättävä hahmo pimeyden takana — inspiraationa 90-luvun selviytymiskauhu-klassikot.</p>
+      <div class="proj-meta-row"><span class="proj-meta">GODOT ENGINE</span><span class="proj-meta">SELVIYTYMISKAUHU</span><span class="proj-meta">PSX-TYYLI</span></div>
+      <div class="filmstrip">
+        <img src="images/proj1_1.jpg" alt="Käytävä 1" data-lightbox>
+        <img src="images/proj1_2.jpg" alt="Käytävä 2" data-lightbox>
+        <img src="images/proj1_3.jpg" alt="Käytävä 3" data-lightbox>
+        <img src="images/proj1_4.jpg" alt="Käytävä 4" data-lightbox>
+        <img src="images/proj1_5.jpg" alt="Käytävä 5, hahmo" data-lightbox>
+      </div>
+    </div>
+  </div>
+
+  <div class="proj-chapter theme-verdant reveal-scale" style="background-color:#050a07;">
+    <div class="proj-bg" style="background-image:url('images/proj2_3.jpg');"></div>
+    <div class="proj-overlay"></div>
+    <div class="fx-firefly" style="left:20%; bottom:22%; animation-duration:7s; animation-delay:0s;"></div>
+    <div class="fx-firefly" style="left:34%; bottom:16%; animation-duration:9s; animation-delay:1.5s;"></div>
+    <div class="fx-firefly" style="left:48%; bottom:28%; animation-duration:8s; animation-delay:3s;"></div>
+    <div class="fx-firefly" style="left:63%; bottom:12%; animation-duration:10s; animation-delay:0.7s;"></div>
+    <div class="fx-firefly" style="left:74%; bottom:24%; animation-duration:7.5s; animation-delay:2.2s;"></div>
+    <div class="fx-firefly" style="left:85%; bottom:18%; animation-duration:9.5s; animation-delay:4s;"></div>
+    <div class="proj-content">
+      <span class="proj-num mono">02 / 05 — ⛰ FANTASIA / AVOIN MAAILMA</span>
+      <h3 class="display">Maankamara</h3>
+      <p class="desc">Low-poly-tyylinen fantasiamaailma kolmannessa persoonassa — jouset, linnat metsän keskellä ja päivä–yö-vaihtelu. HP/stamina/resurssipalkit rakentavat selviytymiskerroksen tutkimisen päälle.</p>
+      <div class="proj-meta-row"><span class="proj-meta">GODOT ENGINE</span><span class="proj-meta">AVOIN MAAILMA</span><span class="proj-meta">MATALAPOLYGONINEN</span></div>
+      <div class="filmstrip">
+        <img src="images/proj2_3.jpg" alt="Maankamara — pelaaja luonnossa" data-lightbox>
+        <img src="images/proj2_4.jpg" alt="Maankamara — yöllinen metsä" data-lightbox>
+        <img src="images/proj2_1.jpg" alt="Maankamara — talo, päivä" data-lightbox>
+        <img src="images/proj2_2.jpg" alt="Maankamara — talo, ilta" data-lightbox>
+      </div>
+    </div>
+  </div>
+
+  <div class="proj-chapter theme-fog reveal-scale" style="background-color:#090b0d;">
+    <div class="proj-bg" style="background-image:url('images/proj3_7.jpg');"></div>
+    <div class="proj-overlay"></div>
+    <div class="fx-fog-layer f1"></div>
+    <div class="fx-fog-layer f2"></div>
+    <div class="fx-fog-layer f3"></div>
+    <div class="proj-content">
+      <span class="proj-num mono">03 / 05 — 🌫 KAUPUNKISELVIYTYMINEN</span>
+      <h3 class="display">Sumu</h3>
+      <p class="desc">Sateinen, sumuinen kaupunki yöllä — tiiliseinäiset kujat, hylätyt esineet ja jokin, joka odottaa valon takana. Rakennettu tunnelman ja rajoitetun näkyvyyden varaan.</p>
+      <div class="proj-meta-row"><span class="proj-meta">GODOT ENGINE</span><span class="proj-meta">TUNNELMAKAUHU</span><span class="proj-meta">SUMURENDERÖINTI</span></div>
+      <div class="filmstrip">
+        <img src="images/proj3_1.jpg" alt="Sumuinen kuja, pyörä" data-lightbox>
+        <img src="images/proj3_2.jpg" alt="Sumuinen kuja, valo" data-lightbox>
+        <img src="images/proj3_3.jpg" alt="Sumuinen kuja, hylly" data-lightbox>
+        <img src="images/proj3_4.jpg" alt="Sumuinen kuja, esteet" data-lightbox>
+        <img src="images/proj3_5.jpg" alt="Sumuinen kuja, putket" data-lightbox>
+        <img src="images/proj3_6.jpg" alt="Näkymä ylhäältä" data-lightbox>
+        <img src="images/proj3_7.jpg" alt="Sateinen katu" data-lightbox>
+        <img src="images/proj3_8.jpg" alt="Aita, sateinen katu" data-lightbox>
+        <img src="images/proj3_9.jpg" alt="Naamio-hahmo lähikuvassa" data-lightbox>
+      </div>
+    </div>
+  </div>
+
+  <div class="proj-chapter theme-void reveal-scale" style="background-color:#0a0304;">
+    <div class="proj-bg" style="background-image:url('images/proj4_10.jpg');"></div>
+    <div class="proj-overlay"></div>
+    <div class="fx-pulse"></div>
+    <div class="fx-drip" style="left:15%; height:60px; animation-duration:3.2s; animation-delay:0s;"></div>
+    <div class="fx-drip" style="left:33%; height:90px; animation-duration:4s; animation-delay:1.1s;"></div>
+    <div class="fx-drip" style="left:52%; height:50px; animation-duration:2.8s; animation-delay:2s;"></div>
+    <div class="fx-drip" style="left:71%; height:80px; animation-duration:3.6s; animation-delay:0.6s;"></div>
+    <div class="fx-drip" style="left:88%; height:65px; animation-duration:3.3s; animation-delay:1.8s;"></div>
+    <div class="proj-content">
+      <span class="proj-num mono">04 / 05 — 🩸 PSYKOLOGINEN KAUHU</span>
+      <h3 class="display">Juna</h3>
+      <p class="desc">Dialogipohjainen psykologinen kauhu junavaunussa. Hulluuden mittari kasvaa valintojen mukana, ja todellisuus alkaa sulaa lihaksi ja vereksi mitä pidemmälle matka jatkuu.</p>
+      <div class="proj-meta-row"><span class="proj-meta">GODOT ENGINE</span><span class="proj-meta">DIALOGISYSTEEMI</span><span class="proj-meta">PSYCHOLOGICAL HORROR</span></div>
+      <div class="filmstrip">
+        <img src="images/proj4_1.jpg" alt="Vaunu, alkutila" data-lightbox>
+        <img src="images/proj4_2.jpg" alt="Dialogivalinnat" data-lightbox>
+        <img src="images/proj4_3.jpg" alt="Vaunu, matkustaja lähestyy" data-lightbox>
+        <img src="images/proj4_5.jpg" alt="Hulluuden mittari 0%" data-lightbox>
+        <img src="images/proj4_6.jpg" alt="Kohtaaminen käytävällä" data-lightbox>
+        <img src="images/proj4_4.jpg" alt="Punainen vääristymä" data-lightbox>
+        <img src="images/proj4_9.jpg" alt="Vaunu, sulava sisustus" data-lightbox>
+        <img src="images/proj4_10.jpg" alt="Lihainen painajaisvaunu" data-lightbox>
+      </div>
+    </div>
+  </div>
+
+  <div class="proj-chapter theme-hud reveal-scale" style="background-color:#040a08; margin-bottom:0; border-bottom:none;">
+    <div class="proj-bg" style="background-image:url('images/proj5_2.jpg');"></div>
+    <div class="proj-overlay"></div>
+    <div class="fx-tick-row t1"></div>
+    <div class="fx-tick-row t2"></div>
+    <svg class="fx-drone" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#4AFFA0" stroke-width="2.4" fill="none">
+        <line x1="16" y1="16" x2="48" y2="48"/>
+        <line x1="48" y1="16" x2="16" y2="48"/>
+      </g>
+      <circle cx="16" cy="16" r="7" fill="#0D1512" stroke="#4AFFA0" stroke-width="2"/>
+      <circle cx="48" cy="16" r="7" fill="#0D1512" stroke="#FF7A3D" stroke-width="2"/>
+      <circle cx="16" cy="48" r="7" fill="#0D1512" stroke="#FF7A3D" stroke-width="2"/>
+      <circle cx="48" cy="48" r="7" fill="#0D1512" stroke="#4AFFA0" stroke-width="2"/>
+      <rect x="26" y="26" width="12" height="12" rx="2" fill="#0D1512" stroke="#4AFFA0" stroke-width="2"/>
+    </svg>
+    <div class="proj-hud-readout mono">
+      RSSI&nbsp;-76DBM<br>LQ&nbsp;92&nbsp;&nbsp;SAT&nbsp;12<br>VTX&nbsp;5.8G
+    </div>
+    <div class="proj-content">
+      <span class="proj-num mono">05 / 05 — ▣ FPV SIMULAATIO</span>
+      <h3 class="display">DRONEQ</h3>
+      <p class="desc">FPV-lennokkisimulaattori aidolla OSD-telemetrialla: RSSI, satelliitit, jännite, korkeus, nopeus ja lennätintilat (ACRO / THERMAL / EMP). Barrel roll -tempuja kerrostalojen välissä, replay-toiminnolla.</p>
+      <div class="proj-meta-row"><span class="proj-meta">OMA PELIMOOTTORI</span><span class="proj-meta">FPV-SIMULAATIO</span><span class="proj-meta">TELEMETRIA / HUD</span></div>
+      <div class="filmstrip">
+        <img src="images/proj5_1.jpg" alt="No signal -tila" data-lightbox>
+        <img src="images/proj5_2.jpg" alt="Lento kerrostalon yllä" data-lightbox>
+        <img src="images/proj5_3.jpg" alt="Replay-kamera, taivas" data-lightbox>
+        <img src="images/proj5_4.jpg" alt="THERMAL-tila, barrel roll" data-lightbox>
+        <img src="images/proj5_5.jpg" alt="Replay-kamera, fasadi" data-lightbox>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="keittio">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div class="eyebrow mono">04 — KEITTIÖSTÄ</div>
+      <h2>Kun ei koodaa, on liesi lämpimänä.</h2>
+      <p>Poimintoja omista ja työkeittiön annoksista — sama tarkkuus kuin projekteissa, vain eri työkalut.</p>
+    </div>
+    <div class="kitchen-strip reveal">
+      <a href="images/food1.jpg" data-lightbox><img src="images/food1.jpg" alt="Kotitekoinen pizza"></a>
+      <a href="images/food3.jpg" data-lightbox><img src="images/food3.jpg" alt="Fokaccia rosmariinilla"></a>
+      <a href="images/food6.jpg" data-lightbox><img src="images/food6.jpg" alt="Mozzarella-caprese-lautanen"></a>
+      <a href="images/food4.jpg" data-lightbox><img src="images/food4.jpg" alt="Caprese-salaatti, keittiö"></a>
+      <a href="images/food7.jpg" data-lightbox><img src="images/food7.jpg" alt="Peruna-porkkanagratiini"></a>
+      <a href="images/food8.jpg" data-lightbox><img src="images/food8.jpg" alt="Uunikylki"></a>
+      <a href="images/food2.jpg" data-lightbox><img src="images/food2.jpg" alt="Lohi-parsakaali-annos"></a>
+    </div>
+  </div>
+</section>
+
+<footer id="yhteys">
+  <div class="contact-grid">
+    <div class="reveal">
+      <div class="eyebrow mono" style="color:var(--signal);">05 — YHTEYS</div>
+      <h2>Puhutaanko?</h2>
+      <p class="lead">Etsin pysyvää työtä, jossa pääsen hyödyntämään monipuolista osaamistani. Vastaan nopeasti — laita viestiä!</p>
+      <a class="btn btn-primary" href="mailto:ontheleanatmm@icloud.com">Lähetä sähköposti</a>
+    </div>
+    <div class="contact-list reveal">
+      <a href="mailto:ontheleanatmm@icloud.com">✉️ ontheleanatmm@icloud.com</a>
+      <a href="tel:+358403779974">📞 +358 40 377 9974</a>
+      <span>📍 Vantaa, Suomi</span>
+      <a href="https://www.linkedin.com/in/matvii-halchevskii-03bb932b9/" target="_blank" rel="noopener">🔗 LinkedIn</a>
+      <a href="#" class="disabled" data-toast="GitHub-linkki lisätään pian">💻 GitHub</a>
+    </div>
+  </div>
+  <div class="foot-note">
+    <span>© 2026 Matvii Halchevskyi</span>
+    <span>Rakennettu Vantaalla 🇫🇮</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-close mono" id="lightboxClose">✕ SULJE</div>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script>
+  // mobile menu
+  const burger = document.getElementById('burgerBtn');
+  const menu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', ()=>{ menu.classList.toggle('open'); });
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click', ()=> menu.classList.remove('open')));
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, {threshold:0.12});
+  revealEls.forEach(el=>io.observe(el));
+
+  // horizontal route progress fill
+  const routeScroll = document.querySelector('.route-scroll');
+  const routeFill = document.getElementById('routeFill');
+  function updateRouteFill(){
+    const max = routeScroll.scrollWidth - routeScroll.clientWidth;
+    const pct = max > 0 ? (routeScroll.scrollLeft / max) * 100 : 0;
+    routeFill.style.width = pct + '%';
+  }
+  routeScroll.addEventListener('scroll', updateRouteFill);
+  updateRouteFill();
+
+  // language bars
+  const langFills = document.querySelectorAll('.lang-fill');
+  const io2 = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.style.width = e.target.dataset.pct + '%'; } });
+  }, {threshold:0.4});
+  langFills.forEach(l=>io2.observe(l));
+
+  // toast for placeholder buttons
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  document.querySelectorAll('[data-toast]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault();
+      toast.textContent = el.dataset.toast;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> toast.classList.remove('show'), 2200);
+    });
+  });
+
+  // lightbox
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  document.querySelectorAll('[data-lightbox]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const src = el.tagName === 'IMG' ? el.src : el.querySelector('img').src;
+      const alt = el.tagName === 'IMG' ? el.alt : el.querySelector('img').alt;
+      lightboxImg.src = src;
+      lightboxImg.alt = alt;
+      lightbox.classList.add('open');
+    });
+  });
+  document.getElementById('lightboxClose').addEventListener('click', ()=> lightbox.classList.remove('open'));
+  lightbox.addEventListener('click', (e)=>{ if(e.target === lightbox) lightbox.classList.remove('open'); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') lightbox.classList.remove('open'); });
+
+  // ---- Signature HUD bar: telemetry driven by scroll ----
+  const hudAlt = document.getElementById('hudAlt');
+  const hudSpd = document.getElementById('hudSpd');
+  const hudHdg = document.getElementById('hudHdg');
+  const hudSat = document.getElementById('hudSat');
+  const hudSection = document.getElementById('hudSection');
+  const heroBg = document.getElementById('heroBg');
+  const sections = [
+    {id:'heroSection', label:'01 · HERO'},
+    {id:'reitti', label:'02 · REITTI'},
+    {id:'osaaminen', label:'03 · OSAAMINEN'},
+    {id:'projektit', label:'04 · PROJEKTIT'},
+    {id:'keittio', label:'05 · KEITTIÖ'},
+    {id:'yhteys', label:'06 · YHTEYS'}
+  ].map(s => ({...s, el: document.getElementById(s.id)}));
+
+  let lastScrollY = window.scrollY;
+  let lastTime = performance.now();
+  let satFlicker = 12;
+
+  function updateHud(){
+    const now = performance.now();
+    const dt = Math.max(now - lastTime, 16);
+    const doc = document.documentElement;
+    const scrollY = window.scrollY;
+    const maxScroll = doc.scrollHeight - window.innerHeight;
+    const pct = maxScroll > 0 ? Math.min(100, (scrollY / maxScroll) * 100) : 0;
+
+    // Altitude = overall scroll progress
+    hudAlt.textContent = 'ALT ' + pct.toFixed(1) + 'M';
+
+    // Speed = px/sec derived from scroll delta, capped for realism
+    const deltaPx = Math.abs(scrollY - lastScrollY);
+    const speed = Math.min(140, Math.round((deltaPx / dt) * 900));
+    hudSpd.textContent = 'SPD ' + speed + 'KM/H';
+
+    // Heading: subtle continuous drift tied to scroll position
+    const hdg = Math.round((182 + pct * 1.6) % 360);
+    hudHdg.textContent = 'HDG ' + hdg + '°';
+
+    // Satellite count: gentle flicker
+    if (Math.random() < 0.05) {
+      satFlicker = 10 + Math.round(Math.random() * 4);
+    }
+    hudSat.textContent = 'SAT ' + satFlicker;
+
+    // Active section label
+    let current = sections[0];
+    for (const s of sections) {
+      if (s.el && s.el.getBoundingClientRect().top < window.innerHeight * 0.5) current = s;
+    }
+    hudSection.textContent = current.label;
+
+    // Hero parallax
+    if (heroBg) {
+      const heroRect = document.getElementById('heroSection').getBoundingClientRect();
+      if (heroRect.bottom > 0) {
+        heroBg.style.transform = 'translateY(' + (scrollY * 0.28) + 'px) scale(1.06)';
+      }
+    }
+
+    // Project chapter parallax
+    document.querySelectorAll('.proj-bg').forEach(bg=>{
+      const rect = bg.parentElement.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        const offset = (rect.top) * 0.12;
+        bg.style.transform = 'translateY(' + (-offset) + 'px) scale(1.08)';
+      }
+    });
+
+    lastScrollY = scrollY;
+    lastTime = now;
+  }
+
+  window.addEventListener('scroll', updateHud, {passive:true});
+  window.addEventListener('resize', updateHud);
+  updateHud();
+  setInterval(updateHud, 900); // keep flicker alive even without scroll
+
+  // ---- Easter eggs ----
+  console.log('%c▣ DRONEQ // OSD ONLINE', 'color:#4AFFA0; font-family:monospace; font-size:14px; font-weight:bold;');
+  console.log('%cTervetuloa konsoliin. Jos etsit koodia — kokeile nuolinäppäimiä ja B + A. 🥊', 'color:#8B93A3; font-family:monospace; font-size:12px;');
+
+  // Konami code: ↑ ↑ ↓ ↓ ← → ← → B A
+  const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let konamiPos = 0;
+  document.addEventListener('keydown', (e)=>{
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (key === konami[konamiPos]) {
+      konamiPos++;
+      if (konamiPos === konami.length) {
+        konamiPos = 0;
+        document.body.style.animation = 'none';
+        toast.textContent = '▣ PILOT MODE UNLOCKED — kiitos kun pelasit läpi koko sivun.';
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(()=> toast.classList.remove('show'), 4500);
+        document.documentElement.style.filter = 'hue-rotate(15deg) saturate(1.3)';
+        setTimeout(()=>{ document.documentElement.style.filter = ''; }, 1800);
+      }
+    } else {
+      konamiPos = (key === konami[0]) ? 1 : 0;
+    }
+  });
+
+  // Logo secret: 5 clicks on the nav name
+  let logoClicks = 0, logoTimer;
+  document.querySelector('.nav-name').addEventListener('click', ()=>{
+    logoClicks++;
+    clearTimeout(logoTimer);
+    logoTimer = setTimeout(()=> logoClicks = 0, 1200);
+    if (logoClicks === 5) {
+      logoClicks = 0;
+      toast.textContent = '🥊 KMS-taso saavutettu. Jatka rullaamista.';
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=> toast.classList.remove('show'), 3000);
+    }
+  });
+</script>
+
+</body>
+</html>
